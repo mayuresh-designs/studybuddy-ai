@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy AI - Free AI Tutor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>StudyBuddy AI</h1>
+            </div>
+            
+            <div class="streak">
+                <i class="fas fa-fire"></i>
+                <div>
+                    <span id="streak-count">0</span> day streak
+                </div>
+            </div>
+
+            <button id="new-chat-btn" class="new-chat">
+                <i class="fas fa-plus"></i> New Chat
+            </button>
+
+            <div class="history" id="chat-history"></div>
+
+            <div class="sidebar-footer">
+                <button id="clear-all-btn">Clear All History</button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main">
+            <div class="header">
+                <h2 id="chat-title">Welcome to StudyBuddy AI</h2>
+                <div class="header-right">
+                    <span id="today-date"></span>
+                </div>
+            </div>
+
+            <div class="chat-container" id="chat-container">
+                <div class="welcome-message">
+                    <h3>👋 Hi Student! How can I help you today?</h3>
+                    <p>Ask me anything: homework, explanations, notes, or study tips.</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <form id="chat-form">
+                    <textarea id="user-input" rows="1" placeholder="Ask anything... Example: Explain gravity in simple words"></textarea>
+                    <button type="submit" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                <p class="disclaimer">100% Free • AI may make mistakes • Verify answers</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
