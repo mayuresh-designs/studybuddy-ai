@@ -1,37 +1,68 @@
-// ==================== PUT YOUR FREE API KEY HERE ====================
-const API_KEY = "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";   // ←←← Paste your Groq or Gemini API key inside the quotes
+// ==================== YOUR API KEY HERE ====================
+const API_KEY = "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";
+const API_PROVIDER = "groq";
 
-const API_PROVIDER = "groq";   // Write "groq" or "gemini"
-
-// Rest of the code (do not change anything below unless you understand)
-const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-
+// ==================== MAIN CODE ====================
 let messages = [];
 let currentChatId = null;
-let streak = 0;
+let allChats = [];
 
+// DOM Elements
 const chatContainer = document.getElementById('chat-container');
-const chatForm = document.getElementById('chat-form');
 const userInput = document.getElementById('user-input');
-const streakCount = document.getElementById('streak-count');
-const chatHistoryDiv = document.getElementById('chat-history');
+const sendBtn = document.getElementById('send-btn');
 const newChatBtn = document.getElementById('new-chat-btn');
-const clearAllBtn = document.getElementById('clear-all-btn');
+const chatHistoryDiv = document.getElementById('chat-history');
 const chatTitle = document.getElementById('chat-title');
+const historySearch = document.getElementById('history-search');
+const voiceBtn = document.getElementById('voice-btn');
 
-function updateStreak() {
-    const today = new Date().toISOString().split('T')[0];
-    let lastVisit = localStorage.getItem('lastVisitDate');
-    
-    if (lastVisit !== today) {
-        if (lastVisit) streak = (streak || 0) + 1;
-        else streak = 1;
-        localStorage.setItem('lastVisitDate', today);
-        localStorage.setItem('studyStreak', streak);
-    } else {
-        streak = parseInt(localStorage.getItem('studyStreak') || '1');
-    }
-    streakCount.textContent = streak || 0;
+// Load previous chats
+function loadChats() {
+    allChats = JSON.parse(localStorage.getItem('studyChats') || '[]');
+    renderHistory();
+}
+
+function renderHistory() {
+    chatHistoryDiv.innerHTML = '';
+    allChats.forEach(chat => {
+        const div = document.createElement('div');
+        div.className = `history-item ${currentChatId === chat.id ? 'active' : ''}`;
+        div.textContent = chat.title || "New Chat";
+        div.onclick = () => loadChat(chat.id);
+        chatHistoryDiv.appendChild(div);
+    });
+}
+
+function saveChat() {
+    if (!currentChatId) return;
+    const title = messages[0] ? messages[0].content.substring(0, 40) + "..." : "New Chat";
+
+    const chatData = {
+        id: currentChatId,
+        title: title,
+        messages: messages,
+        timestamp: Date.now()
+    };
+
+    const index = allChats.findIndex(c => c.id === currentChatId);
+    if (index > -1) allChats[index] = chatData;
+    else allChats.unshift(chatData);
+
+    localStorage.setItem('studyChats', JSON.stringify(allChats));
+    renderHistory();
+}
+
+function loadChat(id) {
+    const chat = allChats.find(c => c.id === id);
+    if (!chat) return;
+
+    currentChatId = id;
+    messages = chat.messages || [];
+    chatTitle.textContent = chat.title || "Chat";
+
+    chatContainer.innerHTML = '';
+    messages.forEach(msg => addMessage(msg.role, msg.content));
 }
 
 function addMessage(role, content) {
@@ -42,13 +73,10 @@ function addMessage(role, content) {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+// Send message to AI
 async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
-    if (!API_KEY) {
-        alert("Please put your free API key in script.js file first!");
-        return;
-    }
 
     addMessage('user', text);
     messages.push({ role: "user", content: text });
@@ -61,61 +89,13 @@ async function sendMessage() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
-        const res = await fetch(GROQ_API_URL, {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${API_KEY}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: "llama-3.1-8b-instant",
                 messages: [
-                    { role: "system", content: "You are a helpful, patient AI tutor for students. Explain clearly and encourage learning." },
-                    ...messages
-                ],
-                temperature: 0.7,
-                max_tokens: 800
-            })
-        });
-
-        const data = await res.json();
-        const reply = data.choices[0].message.content;
-
-        typing.remove();
-        addMessage('ai', reply);
-        messages.push({ role: "assistant", content: reply });
-
-    } catch (err) {
-        typing.remove();
-        addMessage('ai', "Sorry, something went wrong. Check your internet and API key.");
-    }
-}
-
-function startNewChat() {
-    currentChatId = 'chat-' + Date.now();
-    messages = [];
-    chatContainer.innerHTML = `
-        <div class="welcome-message">
-            <h3>👋 Hello! Ready to study?</h3>
-            <p>Ask me anything about your studies.</p>
-        </div>
-    `;
-    chatTitle.textContent = "New Chat";
-}
-
-chatForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    sendMessage();
-});
-
-newChatBtn.addEventListener('click', startNewChat);
-
-clearAllBtn.addEventListener('click', () => {
-    if (confirm("Delete all chats?")) {
-        localStorage.clear();
-        location.reload();
-    }
-});
-
-updateStreak();
-startNewChat();
+                    { role: "system", content: "You are StudyBuddy AI, a friendly and patient AI tutor for students. Explain concepts
